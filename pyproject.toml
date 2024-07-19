@@ -58,6 +58,7 @@ classifiers = [
 dependencies = [
   "quimb",
   "numpy",
+  "newtworkx",
   "scipy",
   "pandas",
   "tqdm",
