@@ -36,4 +36,6 @@ inputfile_*
 .ipynb_checkpoints
 
 run
+build
 data
+src/tfimsim.egg-info/*
