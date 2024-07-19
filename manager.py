@@ -9,8 +9,6 @@ from tfimsim.hamiltonian import EDSimulatorConfig,EDSimulatorQuimb,PEPSSimulator
 from tfimsim.graph import Boundary,LatticeGraph
 from tfimsim.utils import SimulationType
 
-
-
 def args2logname(args):
     """Convert arguments to a name for the log file
 
