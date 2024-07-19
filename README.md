@@ -2,9 +2,11 @@ Simulation of the Transverse Field Ising Model
 ==============================================
 
 This repository contains the code to simulate a two-dimensional transverse field Ising model with the Hamiltonian
+
 $$
 H = J \sum_{\langle i,j \rangle} X_i X_j + h \sum_i Z_i,
 $$
+
 where $J$ is the Ising coupling and $h$ is the transverse field. 
 The matrices $X_i$ and $Z_i$ are the Pauli matrices acting on site $i$.
 
