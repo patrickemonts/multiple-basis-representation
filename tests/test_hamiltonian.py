@@ -16,6 +16,12 @@ class TestEDQuimbSimulator(unittest.TestCase):
             eds1 = EDSimulatorQuimb(self.config, self.graph, J,h)
             self.assertTrue(np.allclose(eds1.hamiltonian.H.A,eds1.hamiltonian.A))
 
+    def test_return_type(self):
+        J,h = np.random.rand(2)
+        eds1 = EDSimulatorQuimb(self.config, self.graph, J,h)
+        en = eds1.gs_energy
+        self.assertIsInstance(en,float)
+
 
 class TestPEPSSimulator(unittest.TestCase):
 
@@ -49,6 +55,14 @@ class TestMPSSimulator(unittest.TestCase):
         self.ed_config= EDSimulatorConfig()
         self.J = -1
 
+    def test_return_type(self):
+        h = 0.34
+        mpssim = MPSSimulator(self.mps_config, self.graph, self.J, h)
+        mps_gs_energy = mpssim.gs_energy
+        ed_mpo_gs_energy, _ = mpssim.ed_groundstate_from_MPO()
+        self.assertIsInstance(mps_gs_energy,float)
+        self.assertIsInstance(ed_mpo_gs_energy,float)
+
     def test_gs_energy_obc_ed_quimb(self):
         h = 0.34
         mpssim = MPSSimulator(self.mps_config, self.graph, self.J, h)
@@ -59,8 +73,17 @@ class TestMPSSimulator(unittest.TestCase):
         rel_error = np.abs((mps_gs_energy-ed_gs_energy)/ed_gs_energy)
         self.assertLess(rel_error,0.001)
 
+    def test_gs_energy_obc_ed_quimb_mpo(self):
+        h = 0.39
+        edsim = EDSimulatorQuimb(self.ed_config, self.graph, self.J, h)
+        ed_gs_energy = edsim.gs_energy
 
-    def test_gs_energy_pbc_ed_mpo(self):
+        mpssim = MPSSimulator(self.mps_config, self.graph, self.J, h)
+        ed_mpo_gs_energy, ed_gs = mpssim.ed_groundstate_from_MPO()
+        self.assertAlmostEqual(ed_gs_energy,ed_mpo_gs_energy,places=4)
+
+
+    def test_gs_energy_obc_ed_mpo(self):
         h = 0.39
         mpssim = MPSSimulator(self.mps_config, self.graph, self.J, h)
         mps_gs_energy = mpssim.gs_energy

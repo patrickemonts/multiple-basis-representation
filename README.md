@@ -4,11 +4,19 @@ Simulation of the Transverse Field Ising Model
 This repository contains the code to simulate a two-dimensional transverse field Ising model with the Hamiltonian
 
 $$
-H = J \sum_{\langle i,j \rangle} X_i X_j + h \sum_i Z_i,
+H = J \sum_{\langle i,j \rangle} S_{x,i} S_{x,j} + h \sum_i S_{z,i},
 $$
 
 where $J$ is the Ising coupling and $h$ is the transverse field. 
-The matrices $X_i$ and $Z_i$ are the Pauli matrices acting on site $i$.
+The matrices $S_{x,i}$ and $S_{z,i}$ are the spin operators $S_x$ and $S_z$ acting on site $i$.
+We follow the condensed matter convention of 
+
+$$
+S_x=\frac{1}{2} \sigma_x,\quad 
+S_z=\frac{1}{2} \sigma_z,
+$$
+
+where $\sigma_x$ and $\sigma_z$ are the Pauli matrices.
 
 ## Installation
 The code is written for Python 3 and tested to work with Python 3.8.

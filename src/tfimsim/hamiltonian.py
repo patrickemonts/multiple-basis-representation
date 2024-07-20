@@ -56,7 +56,8 @@ class EDSimulatorQuimb:
     def compute_gs_energy(self):
         """Compute the groundstate energy using exact diagonalization"""
         ham = self.hamiltonian
-        el = qu.eigvalsh(ham, k=1, which="SA")
+        # We would like a number, not an array, so we take the first element
+        el = qu.eigvalsh(ham, k=1, which="SA")[0]
         # The return value is a tuple, the first element is the energy.
         # We are just returning a tuple to stay consistent with the other sister classes.
         return el, None
@@ -207,7 +208,7 @@ class MPSSimulator:
         """Build the Hamiltonian for the dimer model"""
         if self._hamiltonian is None:
             # We do not want to use 2d coordinates here, but link indices which yields a pseudo-1d Hamiltonian
-            model_params = dict(L=self.graph.size, h=self.h, graph=self.graph,
+            model_params = dict(L=self.graph.size, J=self.J, h=self.h, graph=self.graph,
                                 bc_MPS='finite', conserve=None)
             model = TFIModel(model_params)
             self._hamiltonian = model
@@ -293,7 +294,7 @@ class TFIModel(CouplingMPOModel):
             # We have to make sure that the link is oriented correctly
             i = min(link)
             j = max(link)
-            # The model implemented here is XX + bz Z
-            self.add_coupling_term(J, i, j,'Sigmax','Sigmax')
+            # The model implemented here is J XX + bz Z
+            self.add_coupling_term(J, i, j,'Sx','Sx')
         for ind in range(graph.size):
-            self.add_onsite_term(h, ind, 'Sigmaz')
+            self.add_onsite_term(h, ind, 'Sz')
