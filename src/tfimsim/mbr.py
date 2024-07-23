@@ -4,17 +4,19 @@ import numpy as np
 from itertools import combinations
 
 def evaluate_energies_xx(edges, bitstring, J = 1):
-    # The ZZ hamiltonian is given by a sum of terms (-X_i X_j)
+    # The XX hamiltonian is given by a sum of terms (-X_i X_j)
     # This function computes the energy of a bitstring in the basis H with respect to a Hamiltonian especified by the edges
     energy = 0
     for e in edges:
-        if bitstring[e[0]] == bitstring[e[1]]: energy -= 1
-        else: energy += 1
+        if bitstring[e[0]] == bitstring[e[1]]:
+            energy -= 1
+        else:
+            energy += 1
     
     return energy
 
 def evaluate_energies_z(bitstring):
-    # The X hamiltonian is given by a sum of terms (-Z_i)
+    # The Z hamiltonian is given by a sum of terms (-Z_i)
     # This function computes the energy of a bitstring in the with respect to a Hamiltonian given by the sum of all Z terms
     energy = bitstring.count('1') - bitstring.count('0')
 
