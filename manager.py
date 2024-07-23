@@ -188,6 +188,7 @@ def main(args):
                     dest_dict["degree"].append(degree)
 
             df = pd.DataFrame(dest_dict)
+            df.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float, "degree":int})
 
         else:
             config = config_from_args(args)
@@ -206,6 +207,7 @@ def main(args):
                 dest_dict["energy"].append(energy)
 
             df_raw = pd.DataFrame(dest_dict)
+            df_raw.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float})
             df = add_config_columns(df_raw, args) 
 
         df["energy_per_site"] = df["energy"]/(df["nx"]*df["ny"])
