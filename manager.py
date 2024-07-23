@@ -20,7 +20,7 @@ def args2logname(args):
     Returns:
         str: Filename of the log file
     """
-    fname = f"log_L_{args.nx:02d}-{args.ny:02d}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}.log"
+    fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}.log"
     return os.path.join(args.output, fname)
 
 def args2fname(args):
@@ -32,7 +32,7 @@ def args2fname(args):
     Returns:
         str: Filename of the output file
     """
-    fname = f"data_L_{args.nx:02d}-{args.ny:02d}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+    fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
     return fname
 
 def simulator_cls_from_args(args):
@@ -99,31 +99,23 @@ def main(args):
     Args:
         args: The arguments as provided by argparse.
     """
-    #Set up the logger
-    h_stdout = logging.StreamHandler(stream=sys.stdout)
-    h_stderr = logging.StreamHandler(stream=sys.stderr)
-    h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
-    logging.basicConfig(
-        level=args.level.upper(),
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            logging.FileHandler(args2logname(args)),
-            h_stdout,
-            h_stderr
-        ]
-    )
-
-    # logging.info("Git hash: {}".format(utils.get_git_hash()))
-    logging.info("========= SYSTEM INFO ==========")
-    logging.info(f"Size: {args.nx}x{args.ny}")
-    logging.info(f"Boundary conditions: {args.bdc}")
-    logging.info(f"Method: {args.type}")
-    logging.info("================================")
-
     fname_out = args2fname(args)
     path_out = os.path.join(args.output, fname_out) 
     if not os.path.exists(path_out) or args.overwrite:
-        # Call different functions depending on the mode specified via CLI
+        #Set up the logger
+        h_stdout = logging.StreamHandler(stream=sys.stdout)
+        h_stderr = logging.StreamHandler(stream=sys.stderr)
+        h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
+        logging.basicConfig(
+            level=args.level.upper(),
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            handlers=[
+                logging.FileHandler(args2logname(args)),
+                h_stdout,
+                h_stderr
+            ]
+        )
+
         nx = args.nx
         ny = args.ny
         nsteps = args.nsteps
@@ -140,6 +132,14 @@ def main(args):
 
             hvec = np.linspace(hmin,hmax,nsteps, endpoint=True)
 
+        # logging.info("Git hash: {}".format(utils.get_git_hash()))
+        logging.info("========= SYSTEM INFO ==========")
+        logging.info(f"Size: {args.nx}x{args.ny}")
+        logging.info(f"J: {args.J}")
+        logging.info(f"nsteps: {nsteps}")
+        logging.info(f"Boundary conditions: {args.bdc}")
+        logging.info(f"Method: {args.type}")
+        logging.info("================================")
 
         if args.type == SimulationType.MBR:
 
