@@ -36,8 +36,8 @@ classifiers = [
   "Development Status :: 3 - Alpha",
 
   # Indicate who your project is intended for
-  "Intended Audience :: Developers",
-  "Topic :: Software Development :: Build Tools",
+  "Intended Audience :: Natural Science",
+  "Topic :: Simulation :: Physics",
 
   # Pick your license as you wish
   #TODO: Fix this
@@ -65,6 +65,7 @@ dependencies = [
   "matplotlib",
   "cssselect",
   "physics-tenpy",
+  "kahypar",
 ]
 
 [project.optional-dependencies]
