@@ -1,20 +1,6 @@
-import mbr
+import tfimsim.mbr as mbr
 import numpy as np
 from scipy.linalg import eigvalsh
-from argparse import ArgumentParser
-
-
-parser = ArgumentParser()
-
-parser.add_argument('--nx', type=int, default=3, help='Number of sites in the x-dimension')
-parser.add_argument('--ny', type=int, default=3, help='Number of sites in the y-dimension')
-parser.add_argument('--J', type=float, default=1, help='Coefficient for the XX term')
-parser.add_argument('--h_min', type=float, default=0, help='Minimal value for the coefficient in the Z term')
-parser.add_argument('--h_max', type=float, default=1, help='Maximal value for the coefficient in the Z term')
-parser.add_argument('--steps', type=int, default=51, help='Number of steps to sweep the h parameter')
-
-
-
 def main(nx, ny, J, h_min, h_max, steps):
 
     edges = mbr.create_edges(nx, ny)
@@ -63,11 +49,17 @@ def main(nx, ny, J, h_min, h_max, steps):
 
 
 if __name__ == '__main__':
-    nx = vars(parser.parse_args())['nx']
-    ny = vars(parser.parse_args())['ny']
-    J = vars(parser.parse_args())['J']
-    h_min = vars(parser.parse_args())['h_min']
-    h_max = vars(parser.parse_args())['h_max']
-    steps = vars(parser.parse_args())['steps']
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser()
+
+    parser.add_argument('--nx', type=int, default=3, help='Number of sites in the x-dimension')
+    parser.add_argument('--ny', type=int, default=3, help='Number of sites in the y-dimension')
+    parser.add_argument('--J', type=float, default=1, help='Coefficient for the XX term')
+    parser.add_argument('--h_min', type=float, default=0, help='Minimal value for the coefficient in the Z term')
+    parser.add_argument('--h_max', type=float, default=1, help='Maximal value for the coefficient in the Z term')
+    parser.add_argument('--steps', type=int, default=51, help='Number of steps to sweep the h parameter')
+
+    args = parser.parse_args()
     
-    main(nx, ny, J, h_min, h_max, steps)
+    main(args.nx, args.ny, args.J, args.h_min, args.h_max, args.steps)
