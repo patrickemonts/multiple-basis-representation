@@ -99,22 +99,23 @@ def main(args):
     Args:
         args: The arguments as provided by argparse.
     """
+    #Set up the logger
+    h_stdout = logging.StreamHandler(stream=sys.stdout)
+    h_stderr = logging.StreamHandler(stream=sys.stderr)
+    h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
+    logging.basicConfig(
+        level=args.level.upper(),
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(args2logname(args)),
+            h_stdout,
+            h_stderr
+        ]
+    )
+
     fname_out = args2fname(args)
     path_out = os.path.join(args.output, fname_out) 
     if not os.path.exists(path_out) or args.overwrite:
-        #Set up the logger
-        h_stdout = logging.StreamHandler(stream=sys.stdout)
-        h_stderr = logging.StreamHandler(stream=sys.stderr)
-        h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
-        logging.basicConfig(
-            level=args.level.upper(),
-            format="%(asctime)s [%(levelname)s] %(message)s",
-            handlers=[
-                logging.FileHandler(args2logname(args)),
-                h_stdout,
-                h_stderr
-            ]
-        )
 
         nx = args.nx
         ny = args.ny
