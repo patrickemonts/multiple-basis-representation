@@ -19,6 +19,7 @@ class SimulationType(Enum):
     ED = "ed"
     MPS = "mps"
     PEPS = "peps"
+    MBR = "mbr"
 
     def __str__(self):
         return self.value
