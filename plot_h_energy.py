@@ -11,7 +11,9 @@ def main(args):
             dfvec.append(pd.read_csv(fname, index_col=0))
 
     df = pd.concat(dfvec)
-    df["degree_str"] = df["degree"].apply(lambda x: " - "+str(x) if x is not np.nan else "")
+    df["degree"] = df["degree"].fillna(-1)
+    df["degree"] = df["degree"].astype(int)
+    df["degree_str"] = df["degree"].apply(lambda x: f" - {x:d}" if x >0 else "")
     df["type_plot"] = df["type"] + df["degree_str"]
     sns.relplot(data=df,hue="type_plot",x="h",y="energy", col="nx", style="type", alpha=0.9)
     plt.show()
