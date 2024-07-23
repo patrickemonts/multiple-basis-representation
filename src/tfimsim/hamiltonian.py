@@ -49,8 +49,10 @@ class EDSimulatorQuimb:
 
     def build_hamiltonian(self):
         """Build the Hamiltonian for the transverse field Ising model"""
+        # The factors of 4 and 2 are due to the fact that the Hamiltonian is defined in terms of spin matrices, not Pauli matrices.
+        # Each spin operator is half of the corresponding Pauli matrix.
         dest = qu.gen.operators.ham_heis_2D(self.graph.nx, self.graph.ny, j=(
-            self.J, 0, 0), bz=self.h, cyclic=False, sparse=self.config.use_sparse)
+            4*self.J, 0, 0), bz=2*self.h, cyclic=False, sparse=self.config.use_sparse)
         return dest
     
     def compute_gs_energy(self):
@@ -103,9 +105,11 @@ class PEPSSimulator:
     def build_hamiltonian(self):
         """Build the Hamiltonian for the dimer model"""
         import quimb.tensor as qtn
+        # The factors of 4 and 2 are due to the fact that the Hamiltonian is defined in terms of spin matrices, not Pauli matrices.
+        # Each spin operator is half of the corresponding Pauli matrix.
         if self._hamiltonian is None:
-            ham_2 = qu.ham_heis(2, j=(1,0,0))
-            ham_1 = {None: self.h * qu.spin_operator('Z')}
+            ham_2 = qu.ham_heis(2, j=(self.J*4, 0, 0))
+            ham_1 = {None: 2*self.h * qu.spin_operator('Z')}
             self._hamiltonian = qtn.LocalHam2D(self.graph.nx, self.graph.ny, H2=ham_2, H1=ham_1)
         return self._hamiltonian
 
@@ -295,6 +299,6 @@ class TFIModel(CouplingMPOModel):
             i = min(link)
             j = max(link)
             # The model implemented here is J XX + bz Z
-            self.add_coupling_term(J, i, j,'Sx','Sx')
+            self.add_coupling_term(J, i, j,'Sigmax','Sigmax')
         for ind in range(graph.size):
-            self.add_onsite_term(h, ind, 'Sz')
+            self.add_onsite_term(h, ind, 'Sigmaz')
