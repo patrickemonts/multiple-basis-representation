@@ -143,7 +143,7 @@ def main(args):
 
         if args.type == SimulationType.MBR:
 
-            dest_dict = {"nx":[],"ny":[],"h":[],"energy":[], "degree":[]}
+            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[], "degree":[]}
 
             edges = mbr.create_edges(nx, ny)
             nqubits = nx * ny
@@ -180,6 +180,7 @@ def main(args):
                     eigm = eigvalsh(H, F[j]) # Generalized eigenvalue solving
                     
                     logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {eigm[0]:0.2f}") #Just information
+                    dest_dict["J"].append(J)
                     dest_dict["h"].append(h)
                     dest_dict["nx"].append(nx)
                     dest_dict["ny"].append(ny)
@@ -193,14 +194,15 @@ def main(args):
             simulator_cls = simulator_cls_from_args(args)
             graph = LatticeGraph(nx,ny,Boundary.OBC)
 
-            dest_dict = {"nx":[],"ny":[],"h":[],"energy":[]}
+            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[]}
 
             for h in tqdm(hvec):
                 simulator = simulator_cls(config, graph, J, h)
                 energy = simulator.gs_energy
+                dest_dict["J"].append(J)
+                dest_dict["h"].append(h)
                 dest_dict["nx"].append(graph.nx)
                 dest_dict["ny"].append(graph.ny)
-                dest_dict["h"].append(h)
                 dest_dict["energy"].append(energy)
 
             df_raw = pd.DataFrame(dest_dict)
