@@ -130,6 +130,11 @@ def main(args):
         hmax = args.hmax
         J = args.J
 
+        ###### I would need an extra argument for the degree ####
+        ###### Equivalent to the bond dimension of a MPs ########
+        # For the moment I am fixing it with this extra line
+        degree = args.degree
+
         if hmin == hmax:
             hvec = [hmin]
         else:
@@ -154,45 +159,34 @@ def main(args):
 
             edges = mbr.create_edges(nx, ny)
             nqubits = nx * ny
+            ferro = (J <= 0)
+            print(ferro)
 
-            degrees = [1, 2]
-            if nqubits == 6: degrees = [1]
-
-            f = []
-            bitstrings_x = []
-            bitstrings_z = []
-            energies_z = []
-            energies_xx = []
-            F = []
-
-            for i, degree in enumerate(degrees):
-                # Create bitstrings. X bitstring is twice as long as Z bitstrings
-                bitstrings_x.append(mbr.create_x_list(nqubits, degree))
-                bitstrings_z.append(mbr.create_z_list(nqubits, degree))
-                f.append(mbr.compute_overlap_matrix(
-                    bitstrings_x[-1], bitstrings_z[-1]))
-                energies_xx.append(np.array(mbr.evaluate_all_energies_xx(
-                    bitstrings_x[-1], bitstrings_z[-1], edges)))  # Energy evaluation
-                energies_z.append(np.array(mbr.evaluate_all_energies_z(
-                    bitstrings_x[-1], bitstrings_z[-1])))
-                # Overlap matrix with all contributions
-                F.append(np.block([[np.eye(len(bitstrings_x[-1]), len(bitstrings_x[-1])), f[-1]], [
-                         np.conj(f[-1]).T, np.eye(len(bitstrings_z[-1]), len(bitstrings_z[-1]))]]))
+            # Create bitstrings. X bitstring is twice as long as Z bitstrings
+            bitstrings_x = mbr.create_x_list(nx, ny, degree, ferro=ferro)
+            bitstrings_z = mbr.create_z_list(nx, ny, degree)
+            f = mbr.compute_overlap_matrix(bitstrings_x, bitstrings_z)
+            energies_xx = np.array(mbr.evaluate_all_energies_xx(
+                bitstrings_x, bitstrings_z, edges))  # Energy evaluation
+            energies_z = np.array(mbr.evaluate_all_energies_z(
+                bitstrings_x, bitstrings_z))
+            # Overlap matrix with all contributions
+            F = np.block([[np.eye(len(bitstrings_x), len(bitstrings_x)), f], [
+                        np.conj(f).T, np.eye(len(bitstrings_z), len(bitstrings_z))]])
 
             for i, h in enumerate(hvec):
                 
-                for j, degree in enumerate(degrees):
-                    H = J * energies_xx[j] + h * energies_z[j]
+                H = J * energies_xx + h * energies_z
 
-                    eigm = eigvalsh(H, F[j]) # Generalized eigenvalue solving
-                    
-                    logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {eigm[0]:0.2f}") #Just information
-                    dest_dict["J"].append(J)
-                    dest_dict["h"].append(h)
-                    dest_dict["nx"].append(nx)
-                    dest_dict["ny"].append(ny)
-                    dest_dict["energy"].append(eigm[0])
-                    dest_dict["degree"].append(degree)
+                eigm = eigvalsh(H, F) # Generalized eigenvalue solving
+                
+                logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {eigm[0]:0.2f}") #Just information
+                dest_dict["J"].append(J)
+                dest_dict["h"].append(h)
+                dest_dict["nx"].append(nx)
+                dest_dict["ny"].append(ny)
+                dest_dict["energy"].append(eigm[0])
+                dest_dict["degree"].append(degree)
 
             df = pd.DataFrame(dest_dict)
             df.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float, "degree":int})
@@ -257,6 +251,10 @@ if __name__ == "__main__":
 
     # ED options
     parser.add_argument("--ed-no-sparse", default=False, action="store_true", help="Do not use sparse matrices in ED simulation")
+
+    # MBR options
+    parser.add_argument("--degree", type=int, default=1, help="Degree of approximation in the MBR diagonalization")
+
 
     args = parser.parse_args()
 

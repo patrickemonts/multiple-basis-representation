@@ -3,47 +3,24 @@
 import numpy as np
 from itertools import combinations
 
-
-def evaluate_energies_xx(edges, bitstring, J=1):
-    # The XX hamiltonian is given by a sum of terms (-X_i X_j)
-    # This function computes the energy of a bitstring in the basis H with respect to a Hamiltonian especified by the edges
-    energy = 0
-    for e in edges:
-        if bitstring[e[0]] == bitstring[e[1]]:
-            energy -= 1
-        else:
-            energy += 1
-
-    return energy
-
-
-def evaluate_energies_z(bitstring):
-    # The Z hamiltonian is given by a sum of terms (-Z_i)
-    # This function computes the energy of a bitstring in the with respect to a Hamiltonian given by the sum of all Z terms
-    energy = bitstring.count('1') - bitstring.count('0')
-
-    return energy
-
-
 def _xor(b1, b2):
     # auxiliary function XOR, with proper formatting
     return bin(int(b1, 2) ^ int(b2, 2))[2:].zfill(len(b1))
 
-
-def evaluate_all_energies_xx(bitstrings_x, bitstrings_z, edges):
-    # Function to evaluate all energies given by the $XX$ hamiltonian, specified by bitstring in the computational and hadamard bases
-    # Extension of evaluate_energies_xx
+def _evaluate_energies_xx_xx(bitstrings_x, bitstrings_z, edges): 
     energies_xx = np.zeros((len(bitstrings_x), len(bitstrings_x)))
-    energies_xz = np.zeros((len(bitstrings_x), len(bitstrings_z)))
-    energies_zz = np.zeros((len(bitstrings_z), len(bitstrings_z)))
-
     for i, xi in enumerate(bitstrings_x):
         for e in edges:
             if xi[e[0]] == xi[e[1]]:
-                energies_xx[i, i] -= 1
-            else:
                 energies_xx[i, i] += 1
+            else:
+                energies_xx[i, i] -= 1
 
+    return energies_xx
+
+
+def _evaluate_energies_xx_xz(bitstrings_x, bitstrings_z, edges):
+    energies_xz = np.zeros((len(bitstrings_x), len(bitstrings_z)))
     for i, xi in enumerate(bitstrings_x):  # OVerlapping terms
         for j, zj in enumerate(bitstrings_z):
             for e in edges:
@@ -56,13 +33,18 @@ def evaluate_all_energies_xx(bitstrings_x, bitstrings_z, edges):
 
                     v *= (-1)**(z * x)/np.sqrt(2)
 
-                energies_xz[i, j] -= v
+                energies_xz[i, j] += v
+
+    return energies_xz
+
+
+def _evaluate_energies_xx_zz(bitstrings_x, bitstrings_z, edges):
+    energies_zz = np.zeros((len(bitstrings_z), len(bitstrings_z)))
 
     for i, zi in enumerate(bitstrings_z):  # ZZ terms, most terms are diagonal
         for j, zj in enumerate(bitstrings_z):
             for e in edges:
                 v = 1
-
                 for k, (z1, z2) in enumerate(zip(zi, zj)):
                     z1 = int(z1)
                     z2 = int(z2)
@@ -73,26 +55,35 @@ def evaluate_all_energies_xx(bitstrings_x, bitstrings_z, edges):
                     if v == 0:
                         break
 
-                energies_zz[i, j] -= v
+                energies_zz[i, j] += v
+
+    return energies_zz
+
+def evaluate_all_energies_xx(bitstrings_x, bitstrings_z, edges):
+    # Function to evaluate all energies given by the $XX$ hamiltonian, specified by bitstring in the computational and hadamard bases
+    # Extension of evaluate_energies_xx
+    energies_xx = _evaluate_energies_xx_xx(bitstrings_x, bitstrings_z, edges)
+    energies_xz = _evaluate_energies_xx_xz(bitstrings_x, bitstrings_z, edges)
+    energies_zz = _evaluate_energies_xx_zz(bitstrings_x, bitstrings_z, edges)
+    
 
     energies = np.block([[energies_xx, energies_xz], [
                         np.conj(energies_xz.T), energies_zz]])
 
     return energies
 
-
-def evaluate_all_energies_z(bitstrings_x, bitstrings_z):
-    # Function to evaluate all energies given by the $Z$ hamiltonian, specified by bitstring in the computational and hadamard bases
-    # Extension of evaluate_energies_z
+def _evaluate_energies_z_xx(bitstrings_x, bitstrings_z):
     energies_xx = np.zeros((len(bitstrings_x), len(bitstrings_x)))
-    energies_xz = np.zeros((len(bitstrings_x), len(bitstrings_z)))
-    energies_zz = np.zeros((len(bitstrings_z), len(bitstrings_z)))
     for i, xi in enumerate(bitstrings_x):  # XX terms
         for j, xj in enumerate(bitstrings_x):
             xor = _xor(xi, xj)
             if xor.count('1') == 1:
-                energies_xx[i, j] -= 1
+                energies_xx[i, j] += 1
 
+    return energies_xx
+
+def _evaluate_energies_z_xz(bitstrings_x, bitstrings_z):
+    energies_xz = np.zeros((len(bitstrings_x), len(bitstrings_z)))
     for i, xi in enumerate(bitstrings_x):  # overlaps between bases
         for j, zj in enumerate(bitstrings_z):
             for q in range(len(xi)):
@@ -103,10 +94,23 @@ def evaluate_all_energies_z(bitstrings_x, bitstrings_z):
                     if k == q:
                         x = (x + 1) % 2
                     v *= (-1)**(x * z) / np.sqrt(2)
-                energies_xz[i, j] -= v
+                energies_xz[i, j] += v
 
+    return energies_xz
+
+def _evaluate_energies_z_zz(bitstrings_x, bitstrings_z):
+    energies_zz = np.zeros((len(bitstrings_z), len(bitstrings_z)))
     for i, zi in enumerate(bitstrings_z):  # contribution in the computational bases
-        energies_zz[i, i] = zi.count('1') - zi.count('0')
+        energies_zz[i, i] = zi.count('0') - zi.count('1')
+
+    return energies_zz
+
+def evaluate_all_energies_z(bitstrings_x, bitstrings_z):
+    # Function to evaluate all energies given by the $Z$ hamiltonian, specified by bitstring in the computational and hadamard bases
+    # Extension of evaluate_energies_z
+    energies_xx = _evaluate_energies_z_xx(bitstrings_x, bitstrings_z)
+    energies_xz = _evaluate_energies_z_xz(bitstrings_x, bitstrings_z)
+    energies_zz = _evaluate_energies_z_zz(bitstrings_x, bitstrings_z)
 
     energies = np.block([[energies_xx, energies_xz], [
                         np.conj(energies_xz.T), energies_zz]])
@@ -123,7 +127,7 @@ def compute_overlap_matrix(bitstrings_x, bitstrings_z):
         for j in range(len(bitstrings_z)):
             x = bitstrings_x[i]
             z = bitstrings_z[j]
-            assert len(x) == len(z)
+            # assert len(x) == len(z)
             for xi, zi in zip(x, z):
                 f[i, j] *= (-1)**(int(xi) * int(zi))
 
@@ -157,17 +161,30 @@ def generate_bitstrings(n, k, mode='0'):
     return bitstrings
 
 
-def create_x_list(nqubits, degree):  # List of all bitstrings in the X bases that we consider
+def create_x_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
+    if not ferro:
+        neel = '0'
+        for _ in range(nx - 1):
+            neel += _xor(neel[-1], '1')
+        for _ in range(ny - 1):
+            neel += _xor(neel[-nx:], '1'*nx)
+
+    
+    nqubits = nx * ny
     bitstrings = []
     for k in range(degree+1):
         bitstrings += generate_bitstrings(nqubits, k, mode='0')
         bitstrings += generate_bitstrings(nqubits, k, mode='1')
 
+    if not ferro:
+        bitstrings = [_xor(b, neel) for b in bitstrings]
+
     return bitstrings
 
 
 # List of all bitstrings in the computational bases that we consider
-def create_z_list(nqubits, degree):
+def create_z_list(nx, ny, degree, ferro=True):
+    nqubits = nx * ny 
     bitstrings = []
     for k in range(degree+1):
         bitstrings += generate_bitstrings(nqubits, k, mode='0')
@@ -178,12 +195,14 @@ def create_z_list(nqubits, degree):
 def create_edges(nx, ny):  # Function to create the edges of a square lattice
     qubits = nx * ny
     edges = []
-    for i in range(nx - 1):
+    for i in range(nx-1):
         for j in range(ny):
             # Z(i + nx * j) * Z(i + 1 + nx * j)
             edges.append((i + nx * j, i + 1 + nx * j))
-        for i in range(nx):
-            for j in range(ny-1):
-                # Z(i + nx * j) * Z(i + nx * (j + 1))
-                edges.append((i + nx * j, i + nx * (j + 1)))
-        return edges
+
+    for i in range(nx):
+        for j in range(ny-1):
+            # Z(i + nx * j) * Z(i + nx * (j + 1))
+            edges.append((i + nx * j, i + nx * (j + 1)))
+
+    return edges
