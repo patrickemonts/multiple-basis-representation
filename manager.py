@@ -160,7 +160,6 @@ def main(args):
             edges = mbr.create_edges(nx, ny)
             nqubits = nx * ny
             ferro = (J <= 0)
-            print(ferro)
 
             # Create bitstrings. X bitstring is twice as long as Z bitstrings
             bitstrings_x = mbr.create_x_list(nx, ny, degree, ferro=ferro)
