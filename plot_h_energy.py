@@ -9,6 +9,9 @@ def main(args):
     for fname in args.fnames:
         if os.path.exists(fname):
             dfvec.append(pd.read_csv(fname, index_col=0))
+        else:
+            print(f"File {fname} does not exist. Skipping. ",file=sys.stderr)
+            
 
     df = pd.concat(dfvec)
     df["degree"] = df["degree"].fillna(-1)
