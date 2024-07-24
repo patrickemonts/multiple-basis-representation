@@ -20,7 +20,10 @@ def args2logname(args):
     Returns:
         str: Filename of the log file
     """
-    fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}.log"
+    if args.nsteps is not None:
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.log"
+    else:
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.log"
     return os.path.join(args.output, fname)
 
 def args2fname(args):
@@ -32,7 +35,10 @@ def args2fname(args):
     Returns:
         str: Filename of the output file
     """
-    fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+    if args.nsteps is not None:
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+    else:
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.csv"
     return fname
 
 def simulator_cls_from_args(args):
@@ -54,12 +60,12 @@ def config_from_args(args):
         logging.info("==========================")
     elif args.type == SimulationType.MPS:
         config = MPSSimulatorConfig()
-        config.max_chi = args.mps_max_chi
+        config.chi_max = args.mps_max_chi
         config.rel_energy_delta = args.mps_rel_energy_delta
         config.rel_entropy_delta = args.mps_rel_entropy_delta
         config.no_mixer = args.mps_no_mixer
         logging.info("======== MPS CONFIG =======")
-        logging.info(f"Maximal virtual bond dimension: {config.max_chi}")
+        logging.info(f"Maximal virtual bond dimension: {config.chi_max}")
         logging.info(f"Relative energy delta: {config.rel_energy_delta}")
         logging.info(f"Relative entropy delta: {config.rel_entropy_delta}")
         logging.info(f"Use mixer: {not config.no_mixer}")
@@ -99,22 +105,23 @@ def main(args):
     Args:
         args: The arguments as provided by argparse.
     """
+    #Set up the logger
+    h_stdout = logging.StreamHandler(stream=sys.stdout)
+    h_stderr = logging.StreamHandler(stream=sys.stderr)
+    h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
+    logging.basicConfig(
+        level=args.level.upper(),
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=[
+            logging.FileHandler(args2logname(args)),
+            h_stdout,
+            h_stderr
+        ]
+    )
+
     fname_out = args2fname(args)
     path_out = os.path.join(args.output, fname_out) 
     if not os.path.exists(path_out) or args.overwrite:
-        #Set up the logger
-        h_stdout = logging.StreamHandler(stream=sys.stdout)
-        h_stderr = logging.StreamHandler(stream=sys.stderr)
-        h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
-        logging.basicConfig(
-            level=args.level.upper(),
-            format="%(asctime)s [%(levelname)s] %(message)s",
-            handlers=[
-                logging.FileHandler(args2logname(args)),
-                h_stdout,
-                h_stderr
-            ]
-        )
 
         nx = args.nx
         ny = args.ny
