@@ -20,7 +20,10 @@ def args2logname(args):
     Returns:
         str: Filename of the log file
     """
-    fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}.log"
+    if args.nsteps is not None:
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.log"
+    else:
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.log"
     return os.path.join(args.output, fname)
 
 def args2fname(args):
@@ -32,7 +35,10 @@ def args2fname(args):
     Returns:
         str: Filename of the output file
     """
-    fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+    if args.nsteps is not None:
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+    else:
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.csv"
     return fname
 
 def simulator_cls_from_args(args):
