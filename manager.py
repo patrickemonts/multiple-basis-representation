@@ -60,12 +60,12 @@ def config_from_args(args):
         logging.info("==========================")
     elif args.type == SimulationType.MPS:
         config = MPSSimulatorConfig()
-        config.max_chi = args.mps_max_chi
+        config.chi_max = args.mps_max_chi
         config.rel_energy_delta = args.mps_rel_energy_delta
         config.rel_entropy_delta = args.mps_rel_entropy_delta
         config.no_mixer = args.mps_no_mixer
         logging.info("======== MPS CONFIG =======")
-        logging.info(f"Maximal virtual bond dimension: {config.max_chi}")
+        logging.info(f"Maximal virtual bond dimension: {config.chi_max}")
         logging.info(f"Relative energy delta: {config.rel_energy_delta}")
         logging.info(f"Relative entropy delta: {config.rel_entropy_delta}")
         logging.info(f"Use mixer: {not config.no_mixer}")
