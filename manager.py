@@ -130,11 +130,6 @@ def main(args):
         hmax = args.hmax
         J = args.J
 
-        ###### I would need an extra argument for the degree ####
-        ###### Equivalent to the bond dimension of a MPs ########
-        # For the moment I am fixing it with this extra line
-        degree = args.degree
-
         if hmin == hmax:
             hvec = [hmin]
         else:
@@ -157,8 +152,9 @@ def main(args):
 
             dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[], "degree":[]}
 
+            degree = args.mbr_degree
+
             edges = mbr.create_edges(nx, ny)
-            nqubits = nx * ny
             ferro = (J <= 0)
 
             # Create bitstrings. X bitstring is twice as long as Z bitstrings
@@ -252,8 +248,7 @@ if __name__ == "__main__":
     parser.add_argument("--ed-no-sparse", default=False, action="store_true", help="Do not use sparse matrices in ED simulation")
 
     # MBR options
-    parser.add_argument("--degree", type=int, default=1, help="Degree of approximation in the MBR diagonalization")
-
+    parser.add_argument("--mbr-degree", type=int, default=1, help="Degree of approximation in the MBR diagonalization")
 
     args = parser.parse_args()
 
