@@ -11,6 +11,16 @@ from tfimsim.utils import SimulationType
 import tfimsim.mbr as mbr
 from scipy.linalg import eigvalsh
 
+def args2suffix(args):
+    """Convert type to a suffix for the output file and the log"""
+    if args.type == SimulationType.MPS:
+        return f"chi_{args.mps_max_chi:03d}"
+    elif args.type == SimulationType.PEPS:
+        return f"chi_{args.peps_max_chi:03d}"
+    elif args.type == SimulationType.MBR:
+        return f"chi_{args.mbr_degree:03d}"
+    return ""
+
 def args2logname(args):
     """Convert arguments to a name for the log file
 
@@ -21,9 +31,9 @@ def args2logname(args):
         str: Filename of the log file
     """
     if args.nsteps is not None:
-        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.log"
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}_{args2suffix(args)}.log"
     else:
-        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.log"
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}_{args2suffix(args)}.log"
     return os.path.join(args.output, fname)
 
 def args2fname(args):
@@ -36,9 +46,9 @@ def args2fname(args):
         str: Filename of the output file
     """
     if args.nsteps is not None:
-        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}.csv"
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}_{args2suffix(args)}.csv"
     else:
-        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}.csv"
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}_{args2suffix(args)}.csv"
     return fname
 
 def simulator_cls_from_args(args):
