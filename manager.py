@@ -9,7 +9,7 @@ from tfimsim.hamiltonian import EDSimulatorConfig,EDSimulatorQuimb,PEPSSimulator
 from tfimsim.graph import Boundary,LatticeGraph
 from tfimsim.utils import SimulationType
 import tfimsim.mbr as mbr
-from scipy.linalg import eigvalsh
+from scipy.linalg import eigvalsh, eigh
 
 def args2logname(args):
     """Convert arguments to a name for the log file
@@ -177,14 +177,14 @@ def main(args):
                 
                 H = J * energies_xx + h * energies_z
 
-                eigm = eigvalsh(H, F) # Generalized eigenvalue solving
+                eigm = eigh(H, F) # Generalized eigenvalue solving
                 
                 logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {eigm[0]:0.2f}") #Just information
                 dest_dict["J"].append(J)
                 dest_dict["h"].append(h)
                 dest_dict["nx"].append(nx)
                 dest_dict["ny"].append(ny)
-                dest_dict["energy"].append(eigm[0])
+                dest_dict["energy"].append(eigm[0][0])
                 dest_dict["degree"].append(degree)
 
             df = pd.DataFrame(dest_dict)
