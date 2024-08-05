@@ -9,7 +9,7 @@ from tfimsim.hamiltonian import EDSimulatorConfig,EDSimulatorQuimb,PEPSSimulator
 from tfimsim.graph import Boundary,LatticeGraph
 from tfimsim.utils import SimulationType
 import tfimsim.mbr as mbr
-from scipy.linalg import eigvalsh
+from scipy.linalg import eigvalsh, eigh
 
 def args2suffix(args):
     """Convert type to a suffix for the output file and the log"""
@@ -160,7 +160,7 @@ def main(args):
 
         if args.type == SimulationType.MBR:
 
-            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[], "degree":[]}
+            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[], "degree":[], "mx":[], "mx_s":[], "mz":[]}
 
             degree = args.mbr_degree
 
@@ -178,20 +178,34 @@ def main(args):
             # Overlap matrix with all contributions
             F = np.block([[np.eye(len(bitstrings_x), len(bitstrings_x)), f], [
                         np.conj(f).T, np.eye(len(bitstrings_z), len(bitstrings_z))]])
+            
+            magnetization_z = np.array(mbr.evaluate_magnetization_z(bitstrings_x, bitstrings_z))
+            magnetization_x = np.array(mbr.evaluate_magnetization_x(bitstrings_x, bitstrings_z))
+            magnetization_x_staggered = np.array(mbr.evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny))
 
             for i, h in enumerate(hvec):
                 
                 H = J * energies_xx + h * energies_z
 
-                eigm = eigvalsh(H, F) # Generalized eigenvalue solving
+                D, P = eigh(H, F) # Generalized eigenvalue solving 
+                ground_state = P[:, 0]
+                ground_state_inv = np.linalg.inv(P)[0]
+                energy = ground_state_inv @ np.linalg.inv(F) @ H @ ground_state
+                mz = ground_state_inv @ np.linalg.inv(F) @ magnetization_z @ ground_state
+                mx = ground_state_inv @ np.linalg.inv(F) @ magnetization_x @ ground_state
+                mx_s = ground_state_inv @ np.linalg.inv(F) @ magnetization_x_staggered @ ground_state            
                 
-                logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {eigm[0]:0.2f}") #Just information
+                logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {D[0]:0.2f}") #Just information
                 dest_dict["J"].append(J)
                 dest_dict["h"].append(h)
                 dest_dict["nx"].append(nx)
                 dest_dict["ny"].append(ny)
-                dest_dict["energy"].append(eigm[0])
+                dest_dict["energy"].append(D[0])
                 dest_dict["degree"].append(degree)
+                dest_dict["mz"].append(mz)
+                dest_dict["mx"].append(mx)
+                dest_dict["mx_s"].append(mx_s)
+                # 
 
             df = pd.DataFrame(dest_dict)
             df.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float, "degree":int})
