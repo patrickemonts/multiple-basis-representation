@@ -14,11 +14,11 @@ from scipy.linalg import eigvalsh
 def args2suffix(args):
     """Convert type to a suffix for the output file and the log"""
     if args.type == SimulationType.MPS:
-        return f"chi_{args.mps_max_chi:03d}"
+        return f"_chi_{args.mps_max_chi:03d}"
     elif args.type == SimulationType.PEPS:
-        return f"chi_{args.peps_max_chi:03d}"
+        return f"_chi_{args.peps_max_chi:03d}"
     elif args.type == SimulationType.MBR:
-        return f"chi_{args.mbr_degree:03d}"
+        return f"_chi_{args.mbr_degree:03d}"
     return ""
 
 def args2logname(args):
@@ -31,9 +31,9 @@ def args2logname(args):
         str: Filename of the log file
     """
     if args.nsteps is not None:
-        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}_{args2suffix(args)}.log"
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}{args2suffix(args)}.log"
     else:
-        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}_{args2suffix(args)}.log"
+        fname = f"log_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}{args2suffix(args)}.log"
     return os.path.join(args.output, fname)
 
 def args2fname(args):
@@ -46,9 +46,9 @@ def args2fname(args):
         str: Filename of the output file
     """
     if args.nsteps is not None:
-        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}_{args2suffix(args)}.csv"
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_hmin_{args.hmin:.2f}_hmax_{args.hmax:.2f}_nsteps_{args.nsteps:03d}_type_{args.type}{args2suffix(args)}.csv"
     else:
-        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}_{args2suffix(args)}.csv"
+        fname = f"data_L_{args.nx:02d}-{args.ny:02d}_J_{args.J:0.2f}_h_{args.hmin:.2f}_type_{args.type}{args2suffix(args)}.csv"
     return fname
 
 def simulator_cls_from_args(args):
@@ -201,16 +201,18 @@ def main(args):
             simulator_cls = simulator_cls_from_args(args)
             graph = LatticeGraph(nx,ny,Boundary.OBC)
 
-            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[]}
+            dest_dict = {"nx":[],"ny":[],"J":[],"h":[],"energy":[], "mx":[], "mx_s":[], "mz":[]}
 
             for h in tqdm(hvec):
                 simulator = simulator_cls(config, graph, J, h)
-                energy = simulator.gs_energy
                 dest_dict["J"].append(J)
                 dest_dict["h"].append(h)
                 dest_dict["nx"].append(graph.nx)
                 dest_dict["ny"].append(graph.ny)
-                dest_dict["energy"].append(energy)
+                dest_dict["energy"].append(simulator.gs_energy)
+                dest_dict["mx"].append(simulator.magnetization_x)
+                dest_dict["mx_s"].append(simulator.magnetization_x_stag)
+                dest_dict["mz"].append(simulator.magnetization_z)
 
             df_raw = pd.DataFrame(dest_dict)
             df_raw.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float})
@@ -230,13 +232,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--output", default=".", type=str, help="Output directory")
-    parser.add_argument("--nx", type=int, required=True, help="Size of the lattice in x direction")
-    parser.add_argument("--ny", type=int, required=True, help="Size of the lattice in y direction")
-    parser.add_argument("--bdc", default=Boundary.OBC, type=Boundary, choices=['obc'], help="Boundary conditions")
+    parser.add_argument("--output", default=".",
+                        type=str, help="Output directory")
+    parser.add_argument("--nx", type=int, required=True,
+                        help="Size of the lattice in x direction")
+    parser.add_argument("--ny", type=int, required=True,
+                        help="Size of the lattice in y direction")
+    parser.add_argument("--bdc", default=Boundary.OBC, type=Boundary,
+                        choices=['obc'], help="Boundary conditions")
     parser.add_argument("--level", default="info", help="logging level")
-    parser.add_argument("--overwrite", default=False, action="store_true", help="Overwrite existing files")
-    parser.add_argument("--nsteps", type = int, help="Number of steps")
+    parser.add_argument("--overwrite", default=False,
+                        action="store_true", help="Overwrite existing files")
+    parser.add_argument("--nsteps", type=int, help="Number of steps")
     parser.add_argument("--hmin", type=float, help="Minimal transverse field")
     parser.add_argument("--hmax", type=float, help="Maximal transverse field")
     parser.add_argument("--J", type=float, default=-1., help="Ising coupling")
@@ -245,20 +252,28 @@ if __name__ == "__main__":
 
 
     # MPS options
-    parser.add_argument("--mps-max-chi", type=int, default=80, help="Maximal virtual bond dimension for MPS simulation")
-    parser.add_argument("--mps-rel-energy-delta", type=float, default=1e-8, help="Relative change of energy to consider convergence")
-    parser.add_argument("--mps-rel-entropy-delta", type=float, default=1e-5, help="Relative change of entropy to consider convergence")
-    parser.add_argument("--mps-no-mixer", default=False,action="store_true",help="Do not use the mixer in DMRG")
+    parser.add_argument("--mps-max-chi", type=int, default=80,
+                        help="Maximal virtual bond dimension for MPS simulation")
+    parser.add_argument("--mps-rel-energy-delta", type=float, default=1e-8,
+                        help="Relative change of energy to consider convergence")
+    parser.add_argument("--mps-rel-entropy-delta", type=float, default=1e-5,
+                        help="Relative change of entropy to consider convergence")
+    parser.add_argument("--mps-no-mixer", default=False,
+                        action="store_true", help="Do not use the mixer in DMRG")
 
     # PEPS options
-    parser.add_argument("--peps-max-chi", type=int, default=6, help="Virtual bond dimension of the PEPS simulation")
-    parser.add_argument("--peps-bd-mps-max-chi", type=int, default=32, help="Maximal virtual bond dimension of the boundary MPS")
+    parser.add_argument("--peps-max-chi", type=int, default=6,
+                        help="Virtual bond dimension of the PEPS simulation")
+    parser.add_argument("--peps-bd-mps-max-chi", type=int, default=32,
+                        help="Maximal virtual bond dimension of the boundary MPS")
 
     # ED options
-    parser.add_argument("--ed-no-sparse", default=False, action="store_true", help="Do not use sparse matrices in ED simulation")
+    parser.add_argument("--ed-no-sparse", default=False, action="store_true",
+                        help="Do not use sparse matrices in ED simulation")
 
     # MBR options
-    parser.add_argument("--mbr-degree", type=int, default=1, help="Degree of approximation in the MBR diagonalization")
+    parser.add_argument("--mbr-degree", type=int, default=1,
+                        help="Degree of approximation in the MBR diagonalization")
 
     args = parser.parse_args()
 

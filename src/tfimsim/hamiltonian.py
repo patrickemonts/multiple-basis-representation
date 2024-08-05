@@ -9,8 +9,10 @@ from tenpy.models.model import CouplingMPOModel
 from tenpy.algorithms import dmrg
 from tenpy.networks.site import SpinHalfSite
 from tenpy.algorithms.exact_diag import ExactDiag
+from tenpy.networks.terms import TermList
 
 import quimb as qu
+import quimb.tensor as qtn
 
 class EDSimulatorConfig:
     """Configuration for the ED Simulator"""
@@ -26,8 +28,11 @@ class EDSimulatorQuimb:
         self.J = J
         self.h = h
         self._hamiltonian = None
-        self._gs_energy = None
         self._groundstate = None
+        self._gs_energy = None
+        self._magnetization_z = None
+        self._magnetization_x = None
+        self._magnetization_x_stag = None
 
     @property
     def gs_energy(self):
@@ -59,10 +64,47 @@ class EDSimulatorQuimb:
         """Compute the groundstate energy using exact diagonalization"""
         ham = self.hamiltonian
         # We would like a number, not an array, so we take the first element
-        el = qu.eigvalsh(ham, k=1, which="SA")[0]
+        eigval, eigstate = qu.eigh(ham, k=1, which="SA")
         # The return value is a tuple, the first element is the energy.
         # We are just returning a tuple to stay consistent with the other sister classes.
-        return el, None
+        return eigval[0], eigstate
+
+    @property
+    def magnetization_z(self):
+        if self._magnetization_z is None:
+            self._magnetization_z = 0.
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    op = qu.ikron(qu.pauli('Z'), [
+                                  2]*self.graph.size, inds=(i), sparse=self.config.use_sparse)
+                    self._magnetization_z += np.real_if_close(qu.expec(op,self.groundstate))
+            self._magnetization_z /= self.graph.size
+        return self._magnetization_z 
+
+    @property
+    def magnetization_x(self):
+        if self._magnetization_x is None:
+            self._magnetization_x = 0.
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    op = qu.ikron(qu.pauli('X'), [
+                                  2]*self.graph.size, inds=(i), sparse=self.config.use_sparse)
+                    self._magnetization_x += np.real_if_close(qu.expec(op,self.groundstate))
+            self._magnetization_x /= self.graph.size
+        return self._magnetization_x 
+
+    @property
+    def magnetization_x_stag(self):
+        if self._magnetization_x_stag is None:
+            self._magnetization_x_stag = 0.
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    op = qu.ikron((-1)**(i+j) * qu.pauli('X'),
+                                  [2]*self.graph.size, inds=(i), sparse=self.config.use_sparse)
+                    self._magnetization_x_stag += np.real_if_close(qu.expec(op,self.groundstate))
+            self._magnetization_x_stag /= self.graph.size
+        return self._magnetization_x_stag 
+
 
 class PEPSSimulatorConfig:
     """Configuration for the PEPS Simulator"""
@@ -81,8 +123,11 @@ class PEPSSimulator:
         self.J = J
         self.h = h
         self._hamiltonian = None
-        self._gs_energy = None
         self._groundstate = None
+        self._gs_energy = None
+        self._magnetization_z = None
+        self._magnetization_x = None
+        self._magnetization_x_stag = None
 
     @property
     def gs_energy(self):
@@ -95,6 +140,40 @@ class PEPSSimulator:
         if self._groundstate is None:
             self._gs_energy, self._groundstate = self.compute_gs_energy()
         return self._groundstate
+    
+    @property
+    def magnetization_z(self):
+        if self._magnetization_z is None:
+            opdict = {}
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    opdict[(i,j)] = qu.pauli('Z') 
+            self._magnetization_z = self.groundstate.compute_local_expectation(
+                opdict, normalized=True, max_bond=100)/self.graph.size
+        return self._magnetization_z 
+
+    @property
+    def magnetization_x(self):
+        if self._magnetization_x is None:
+            opdict = {}
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    opdict[(i,j)] = qu.pauli('X') 
+            self._magnetization_x = self.groundstate.compute_local_expectation(
+                opdict, normalized=True, max_bond=100)/self.graph.size
+
+        return self._magnetization_x 
+
+    @property
+    def magnetization_x_stag(self):
+        if self._magnetization_x_stag is None:
+            opdict = {}
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    opdict[(i,j)] = (-1)**(i+j) * qu.pauli('X') 
+            self._magnetization_x_stag = self.groundstate.compute_local_expectation(
+                opdict, normalized=True, max_bond=100)/self.graph.size
+        return self._magnetization_x_stag 
 
     @property
     def hamiltonian(self):
@@ -104,7 +183,6 @@ class PEPSSimulator:
 
     def build_hamiltonian(self):
         """Build the Hamiltonian for the dimer model"""
-        import quimb.tensor as qtn
         # The factors of 4 and 2 are due to the fact that the Hamiltonian is defined in terms of spin matrices, not Pauli matrices.
         # Each spin operator is half of the corresponding Pauli matrix.
         if self._hamiltonian is None:
@@ -115,7 +193,6 @@ class PEPSSimulator:
 
     def compute_gs_energy(self, seed=None):
         """Compute the groundstate energy using PEPS"""
-        import quimb.tensor as qtn
         nx = self.graph.nx
         ny = self.graph.ny
         ham = self.hamiltonian
@@ -180,8 +257,11 @@ class MPSSimulator:
         self.J = J
         self.h = h
         self._hamiltonian = None
-        self._gs_energy = None
         self._groundstate = None
+        self._gs_energy = None
+        self._magnetization_z = None
+        self._magnetization_x = None
+        self._magnetization_x_stag = None
     
     @property
     def gs_energy(self):
@@ -200,6 +280,45 @@ class MPSSimulator:
         if self._hamiltonian is None:
             self._hamiltonian=self.build_hamiltonian()
         return self._hamiltonian
+
+    @property
+    def magnetization_z(self):
+        if self._magnetization_z is None:
+            termvec = []
+            strengthvec = [1.]*self.graph.size
+            for ind in range(self.graph.size):
+                termvec.append([('Sigmaz',ind)])
+            termlist = TermList(termvec, strengthvec)
+            mag_z,_ = self.groundstate.expectation_value_terms_sum(termlist)
+            self._magnetization_z = mag_z/self.graph.size
+        return self._magnetization_z 
+
+    @property
+    def magnetization_x(self):
+        if self._magnetization_x is None:
+            termvec = []
+            strengthvec = [1.]*self.graph.size
+            for ind in range(self.graph.size):
+                termvec.append([('Sigmax',ind)])
+            termlist = TermList(termvec, strengthvec)
+            mag_x, _ = self.groundstate.expectation_value_terms_sum(termlist)
+            self._magnetization_x = mag_x/self.graph.size
+        return self._magnetization_x 
+
+    @property
+    def magnetization_x_stag(self):
+        if self._magnetization_x_stag is None:
+            termvec = []
+            strengthvec = []
+            for i in range(self.graph.nx):
+                for j in range(self.graph.ny):
+                    ind = i*self.graph.ny + j
+                    termvec.append([('Sigmax',ind)])
+                    strengthvec.append((-1)**(i+j))
+            termlist = TermList (termvec, strengthvec)
+            mag_x_stag, _ = self.groundstate.expectation_value_terms_sum(termlist)
+            self._magnetization_x_stag = mag_x_stag/self.graph.size
+        return self._magnetization_x_stag 
 
     def ed_groundstate_from_MPO(self):
         """ Compute the groundstate using exact diagonalization of the MPO"""
