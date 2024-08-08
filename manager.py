@@ -169,7 +169,6 @@ def main(args):
 
             # Create bitstrings. X bitstring is twice as long as Z bitstrings
             bitstrings_x = mbr.create_x_list(nx, ny, degree, ferro=ferro)
-            print(bitstrings_x[0])
             bitstrings_z = mbr.create_z_list(nx, ny, degree)
             f = mbr.compute_overlap_matrix(bitstrings_x, bitstrings_z)
             energies_xx = np.array(mbr.evaluate_all_energies_xx(
@@ -183,12 +182,14 @@ def main(args):
             magnetization_z = np.array(mbr.evaluate_magnetization_z(bitstrings_x, bitstrings_z))
             magnetization_x = np.array(mbr.evaluate_magnetization_x(bitstrings_x, bitstrings_z))
             magnetization_x_staggered = np.array(mbr.evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny))
-            # assert(np.min(np.abs(np.linalg.eigvalsh(F))) > 1e-10)
+            
+            d, U = eigh(F) # to ensure numerical stability
+            if np.min(np.abs(d)) < 1e-10: 
+                F = U @ np.diag(np.clip(d, 1e-10, None)) @ np.conj(U.T)
+
             for i, h in enumerate(hvec):
                 
                 H = J * energies_xx + h * energies_z
-
-                
 
                 D, P = eigh(H, F) # Generalized eigenvalue solving 
                 ground_state = P[:, 0]
