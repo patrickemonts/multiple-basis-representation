@@ -244,7 +244,7 @@ def _evaluate_magnetization_x_xz(bitstrings_x, bitstrings_z):
                     z = int(z)
                     x = int(x)
                     if k == q:
-                        x = (x + 1) % 2
+                        z = (z + 1) % 2
                     v *= (-1)**(x * z) / np.sqrt(2)
                 energies_xz[i, j] += v
 
@@ -275,7 +275,6 @@ def evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny):
 def _evaluate_magnetization_staggered_x_xx(bitstrings_x, bitstrings_z, nx, ny):
     energies_xx = np.zeros((len(bitstrings_x), len(bitstrings_x)))
     for i, xi in enumerate(bitstrings_x):  # XX terms
-        xi_ = xi
         xi = _xor(xi, _neel(nx, ny))
 
         energies_xx[i, i] = xi.count('0') - xi.count('1')
@@ -293,7 +292,7 @@ def _evaluate_magnetization_staggered_x_xz(bitstrings_x, bitstrings_z, nx, ny):
                     z = int(z)
                     x = int(x)
                     if k == q:
-                        x = (x + 1) % 2
+                        z = (z + 1) % 2
                     v *= (-1)**(x * z) / np.sqrt(2)
                 energies_xz[i, j] += (-1)**(qx + qy) * v
 
