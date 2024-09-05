@@ -191,7 +191,7 @@ def create_z_list(nx, ny, degree, ferro=True):
     nqubits = nx * ny 
     bitstrings = []
     for k in range(degree+1):
-        bitstrings += generate_bitstrings(nqubits, k, mode='0')
+        bitstrings += generate_bitstrings(nqubits, k, mode='1')
 
     return bitstrings
 

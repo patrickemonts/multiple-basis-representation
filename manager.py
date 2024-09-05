@@ -11,6 +11,8 @@ from tfimsim.utils import SimulationType
 import tfimsim.mbr as mbr
 from scipy.linalg import eigvalsh, eigh
 
+from time import time
+
 def args2suffix(args):
     """Convert type to a suffix for the output file and the log"""
     if args.type == SimulationType.MPS:
@@ -183,9 +185,8 @@ def main(args):
             magnetization_x = np.array(mbr.evaluate_magnetization_x(bitstrings_x, bitstrings_z))
             magnetization_x_staggered = np.array(mbr.evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny))
             
-            d, U = eigh(F) # to ensure numerical stability
-            if np.min(np.abs(d)) < 1e-10: 
-                F = U @ np.diag(np.clip(d, 1e-10, None)) @ np.conj(U.T)
+            #d, U = eigh(F) # to ensure numerical stability
+            F += 1e-10 * np.eye(F.shape[0])
 
             for i, h in enumerate(hvec):
                 
@@ -193,6 +194,8 @@ def main(args):
 
                 D, P = eigh(H, F) # Generalized eigenvalue solving 
                 ground_state = P[:, 0]
+
+                tac3 = time()
                 # ground_state_inv = np.linalg.inv(P)[0]
                 # energy = ground_state_inv @ np.linalg.inv(F) @ H @ ground_state
 
