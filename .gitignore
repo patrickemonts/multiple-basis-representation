@@ -39,3 +39,4 @@ run
 build
 data
 src/tfimsim.egg-info/*
+dist
