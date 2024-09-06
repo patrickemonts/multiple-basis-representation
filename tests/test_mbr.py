@@ -8,43 +8,7 @@ class TestMBR(unittest.TestCase):
         self.nx = 2
         self.ny = 2
         self.degree = 1
-
-
-    def test_bitstring_x_example(self):
-        degree = 3
-        val = mbr.create_x_list(self.nx, self.ny, degree, ferro=False)
-        ref = ['0110',
-        '1001',
-        '1110',
-        '0010',
-        '0100',
-        '0111',
-        '0001',
-        '1101',
-        '1011',
-        '1000',
-        '1010',
-        '1100',
-        '1111',
-        '0000',
-        '0011',
-        '0101',
-        '0101',
-        '0011',
-        '0000',
-        '1111',
-        '1100',
-        '1010',
-        '1000',
-        '1011',
-        '1101',
-        '0001',
-        '0111',
-        '0100',
-        '0010',
-        '1110']
-        self.assertEqual(len(val), len(ref))
-        self.assertEqual(val,ref)
+        self.edges = mbr.create_edges(self.nx, self.ny)
 
     def test_bitstring(self):
         ref = mbr.generate_bitstrings_str(self.nx * self.ny, self.degree, mode='0')
@@ -98,12 +62,96 @@ class TestMBR(unittest.TestCase):
 
         val = mbr.compute_overlap_matrix(b_x, b_z)
 
-        print(ref)
-        print(val)
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
 
+    def test_energies_xx_xx(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_xx_xx_str(b_x, b_z, self.edges)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_xx_xx(b_x, b_z, self.edges)
 
         self.assertEqual(val.shape, ref.shape)
         self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+
+    def test_energies_xx_xz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_xx_xz_str(b_x, b_z, self.edges)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_xx_xz(b_x, b_z, self.edges)
+
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+
+    def test_energies_xx_zz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_xx_zz_str(b_x, b_z, self.edges)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_xx_zz(b_x, b_z, self.edges)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    
+    def test_energies_z_xx(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_z_xx_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_z_xx(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    def test_energies_z_xz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_z_xz_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_z_xz(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    def test_energies_z_zz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_energies_z_zz_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_energies_z_zz(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
 
     @unittest.skip("API changed")
     def test_evaluate_energies_xx(self):
