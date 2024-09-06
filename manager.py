@@ -195,7 +195,6 @@ def main(args):
                 D, P = eigh(H, F) # Generalized eigenvalue solving 
                 ground_state = P[:, 0]
 
-                tac3 = time()
                 # ground_state_inv = np.linalg.inv(P)[0]
                 # energy = ground_state_inv @ np.linalg.inv(F) @ H @ ground_state
 
@@ -203,7 +202,7 @@ def main(args):
 
                 mz = np.conj(ground_state) @ magnetization_z @ ground_state / (nx*ny) / norm
                 mx = np.conj(ground_state) @ magnetization_x @ ground_state / (nx*ny) / norm
-                mx_s = np.conj(ground_state) @ magnetization_x_staggered @ ground_state / (nx*ny) /norm 
+                mx_s = np.conj(ground_state)@ magnetization_x_staggered @ ground_state / (nx*ny) /norm  
                 
                 logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {D[0]:0.2f}") #Just information
                 dest_dict["J"].append(J)
