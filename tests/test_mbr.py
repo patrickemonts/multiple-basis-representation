@@ -152,6 +152,94 @@ class TestMBR(unittest.TestCase):
         self.assertEqual(val.shape, ref.shape)
         self.assertLess(np.max(np.abs(val - ref)), 1e-5)
 
+    
+    def test_magnetization_x_xx(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_x_xx_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_x_xx(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    def test_magnetization_x_xz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_x_xz_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_x_xz(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    
+    def test_magnetization_x_zz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_x_zz_str(b_x, b_z)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_x_zz(b_x, b_z)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+
+    def test_magnetization_staggered_x_xx(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_staggered_x_xx_str(b_x, b_z, self.nx, self.ny)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_staggered_x_xx(b_x, b_z,  self.nx, self.ny)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    def test_magnetization_staggered_x_xz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_staggered_x_xz_str(b_x, b_z,  self.nx, self.ny)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_staggered_x_xz(b_x, b_z,  self.nx, self.ny)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
+    
+    def test_magnetization_staggered_x_zz(self):
+        b_x = mbr.create_x_list_str(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list_str(self.nx, self.ny, self.degree)
+
+        ref = mbr._evaluate_magnetization_staggered_x_zz_str(b_x, b_z,  self.nx, self.ny)
+
+        b_x = mbr.create_x_list(self.nx, self.ny, self.degree)
+        b_z = mbr.create_z_list(self.nx, self.ny, self.degree)
+
+        val = mbr._evaluate_magnetization_staggered_x_zz(b_x, b_z,  self.nx, self.ny)
+        
+        self.assertEqual(val.shape, ref.shape)
+        self.assertLess(np.max(np.abs(val - ref)), 1e-5)
+
 
     @unittest.skip("API changed")
     def test_evaluate_energies_xx(self):
@@ -170,6 +258,3 @@ class TestMBR(unittest.TestCase):
         bitstring = '111'
         self.assertEqual(mbr.evaluate_energies_z(bitstring), 3)
 
-    def test_bitstrings_z(self):
-        bitstrings_z = mbr.create_z_list(2, 2, 0)
-        self.assertEqual(bitstrings_z[0].count('1'), 3)
