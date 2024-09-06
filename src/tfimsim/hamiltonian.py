@@ -332,7 +332,7 @@ class MPSSimulator:
         if self._hamiltonian is None:
             # We do not want to use 2d coordinates here, but link indices which yields a pseudo-1d Hamiltonian
             model_params = dict(L=self.graph.size, J=self.J, h=self.h, graph=self.graph,
-                                bc_MPS='finite', conserve=None)
+                                bc_MPS='finite')
             model = TFIModel(model_params)
             self._hamiltonian = model
         return self._hamiltonian
