@@ -123,6 +123,19 @@ def compute_overlap_matrix(bitstrings_x, bitstrings_z):
     f = np.ones((len(bitstrings_x), len(bitstrings_z))) / \
         (2**(.5 * len(bitstrings_x[0])))
 
+    exponents = (bitstrings_x @ bitstrings_z.T) % 2
+
+    f = (-1)**exponents / (2**(.5 * len(bitstrings_x[0])))
+    
+    print(f)
+
+    return f
+
+
+def compute_overlap_matrix_str(bitstrings_x, bitstrings_z):
+    f = np.ones((len(bitstrings_x), len(bitstrings_z))) / \
+        (2**(.5 * len(bitstrings_x[0])))
+
     for i in range(len(bitstrings_x)):
         for j in range(len(bitstrings_z)):
             x = bitstrings_x[i]
@@ -134,7 +147,7 @@ def compute_overlap_matrix(bitstrings_x, bitstrings_z):
     return f
 
 
-def generate_bitstrings(n, k, mode='0'):
+def generate_bitstrings_str(n, k, mode='0'):
     if k > n:
         raise ValueError("Number of 1s (k) cannot be greater than length (n)")
 
@@ -160,7 +173,33 @@ def generate_bitstrings(n, k, mode='0'):
 
     return bitstrings
 
-def _neel(nx, ny):
+
+def generate_bitstrings(n, k, mode='0'):
+    if k > n:
+        raise ValueError("Number of 1s (k) cannot be greater than length (n)")
+
+    # Generate all combinations of indices for 1s in the bitstring
+    index_combinations = combinations(range(n), k)
+
+    # Initialize an empty list to store bitstrings
+    bitstrings = []
+
+    # Iterate over index combinations and generate bitstrings
+    for ind, indices in enumerate(index_combinations):
+        if mode == '0':
+            bitstrings.append(np.zeros(n, dtype=int))  # Initialize with all 0s
+        elif mode == '1':
+            bitstrings.append(np.ones(n, dtype = int))  # Initialize with all 1s
+        for index in indices:
+            if mode == '0':
+                bitstrings[-1][index] = 1  # Set 1s at specified indices
+            if mode == '1':
+                bitstrings[-1][index] = 0  # Set 1s at specified indices
+        # Join list to form a string and append to the result list
+
+    return np.vstack(bitstrings)
+
+def _neel_str(nx, ny):
     neel = '0'
     for _ in range(nx - 1):
         neel += _xor(neel[-1], '1')
@@ -169,6 +208,16 @@ def _neel(nx, ny):
     
     return neel
 
+
+def _neel(nx, ny):
+    neel = [0]
+    for _ in range(nx - 1):
+        neel += [(neel[-1] + 1) % 2]
+    for _ in range(ny - 1):
+        neel += [(j + 1)%2 for j in neel[-nx:]]
+    
+    return np.array(neel)
+
 def create_x_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
     if not ferro:
         neel = _neel(nx, ny)
@@ -176,9 +225,28 @@ def create_x_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the 
     
     nqubits = nx * ny
     bitstrings = []
+    for k in range(degree + 1):
+        bitstrings.append(generate_bitstrings(nqubits, k, mode='0'))
+        bitstrings.append(generate_bitstrings(nqubits, k, mode='1'))
+
+    bitstrings = np.vstack(bitstrings)
+    if not ferro:
+        neel = np.vstack([neel]*(bitstrings.shape[0]))
+        bitstrings = (bitstrings + neel) % 2
+
+    return bitstrings
+
+
+def create_x_list_str(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
+    if not ferro:
+        neel = _neel_str(nx, ny)
+
+    
+    nqubits = nx * ny
+    bitstrings = []
     for k in range(degree+1):
-        bitstrings += generate_bitstrings(nqubits, k, mode='0')
-        bitstrings += generate_bitstrings(nqubits, k, mode='1')
+        bitstrings += generate_bitstrings_str(nqubits, k, mode='0')
+        bitstrings += generate_bitstrings_str(nqubits, k, mode='1')
 
     if not ferro:
         bitstrings = [_xor(b, neel) for b in bitstrings]
@@ -187,11 +255,24 @@ def create_x_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the 
 
 
 # List of all bitstrings in the computational bases that we consider
-def create_z_list(nx, ny, degree, ferro=True):
+
+def create_z_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
+  
+    nqubits = nx * ny
+    bitstrings = []
+    for k in range(degree + 1):
+        bitstrings.append(generate_bitstrings(nqubits, k, mode='1'))
+
+    bitstrings = np.vstack(bitstrings)
+
+    return bitstrings
+
+
+def create_z_list_str(nx, ny, degree, ferro=True):
     nqubits = nx * ny 
     bitstrings = []
     for k in range(degree+1):
-        bitstrings += generate_bitstrings(nqubits, k, mode='1')
+        bitstrings += generate_bitstrings_str(nqubits, k, mode='1')
 
     return bitstrings
 
