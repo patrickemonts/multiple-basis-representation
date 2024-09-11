@@ -79,3 +79,4 @@ test = ["coverage"]
 "Source" = "https://github.com/patrickemonts/tfim/"
 
 [tool.setuptools_scm]
+write_to = "src/tfimsim/_version.py"
