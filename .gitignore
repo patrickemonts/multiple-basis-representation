@@ -39,4 +39,5 @@ run
 build
 data
 src/tfimsim.egg-info/*
+src/tfimsim/_version.py
 dist
