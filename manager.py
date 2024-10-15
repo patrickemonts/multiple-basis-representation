@@ -117,7 +117,7 @@ def main(args):
     Args:
         args: The arguments as provided by argparse.
     """
-    #Set up the logger
+    # Set up the logger
     h_stdout = logging.StreamHandler(stream=sys.stdout)
     h_stderr = logging.StreamHandler(stream=sys.stderr)
     h_stderr.addFilter(lambda record: record.levelno >= logging.WARNING)
@@ -170,26 +170,31 @@ def main(args):
             ferro = (J <= 0)
 
             # Create bitstrings. X bitstring is twice as long as Z bitstrings
+            logging.info("Creating bitstrings")
             bitstrings_x = mbr.create_x_list(nx, ny, degree, ferro=ferro)
             bitstrings_z = mbr.create_z_list(nx, ny, degree)
+            logging.info("Computing overlap matrix")
             f = mbr.compute_overlap_matrix(bitstrings_x, bitstrings_z)
-            energies_xx = np.array(mbr.evaluate_all_energies_xx(
-                bitstrings_x, bitstrings_z, edges))  # Energy evaluation
-            energies_z = np.array(mbr.evaluate_all_energies_z(
-                bitstrings_x, bitstrings_z))
+            logging.info("Computing energy contributions")
+            energies_xx = mbr.evaluate_all_energies_xx(
+                bitstrings_x, bitstrings_z, edges
+            )  # Energy evaluation
+            energies_z = mbr.evaluate_all_energies_z(bitstrings_x, bitstrings_z)
             # Overlap matrix with all contributions
             F = np.block([[np.eye(len(bitstrings_x), len(bitstrings_x)), f], [
                         np.conj(f).T, np.eye(len(bitstrings_z), len(bitstrings_z))]])
-            
-            magnetization_z = np.array(mbr.evaluate_magnetization_z(bitstrings_x, bitstrings_z))
-            magnetization_x = np.array(mbr.evaluate_magnetization_x(bitstrings_x, bitstrings_z))
-            magnetization_x_staggered = np.array(mbr.evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny))
-            
-            #d, U = eigh(F) # to ensure numerical stability
+
+            logging.info("Computing magnetization contributions")
+            magnetization_z = energies_z
+            magnetization_x = mbr.evaluate_magnetization_x(bitstrings_x, bitstrings_z)
+            magnetization_x_staggered = mbr.evaluate_magnetization_staggered_x(bitstrings_x, bitstrings_z, nx, ny)
+
+            # d, U = eigh(F) # to ensure numerical stability
             F += 1e-10 * np.eye(F.shape[0])
 
             for i, h in enumerate(hvec):
-                
+                logging.info("Computing h = {:.2f}".format(h))
+
                 H = J * energies_xx + h * energies_z
 
                 D, P = eigh(H, F) # Generalized eigenvalue solving 
@@ -203,7 +208,7 @@ def main(args):
                 mz = np.conj(ground_state) @ magnetization_z @ ground_state / (nx*ny) / norm
                 mx = np.conj(ground_state) @ magnetization_x @ ground_state / (nx*ny) / norm
                 mx_s = np.conj(ground_state)@ magnetization_x_staggered @ ground_state / (nx*ny) /norm  
-                
+
                 logging.info(f"h: {h:0.2f}, degree: {degree}, energy: {D[0]:0.2f}") #Just information
                 dest_dict["J"].append(J)
                 dest_dict["h"].append(h)
@@ -214,7 +219,6 @@ def main(args):
                 dest_dict["mz"].append(mz)
                 dest_dict["mx"].append(mx)
                 dest_dict["mx_s"].append(mx_s)
-                # 
 
             df = pd.DataFrame(dest_dict)
             df.astype({"nx":int, "ny":int, "J":float, "h":float, "energy":float, "degree":int})
