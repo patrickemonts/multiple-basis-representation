@@ -30,11 +30,8 @@ The virtual environment can be deactivated with `deactivate`.
 2. Cloning the code  
 You can obtain the code by cloning the repo with
 ```
-git clone git@github.com:patrick.emonts/TBD
+git clone git@github.com:patrick.emonts/multiple-basis-representation
 ```
-
-Note that you currently have to be a member of the project to clone it.
-Cloning via SSH works only if you have added a (public) SSH key to the repository.
 
 3. Install the `mbrsim` package
 The `mbrsim` package is still in the development phase.
@@ -56,13 +53,14 @@ All scripts in the main folder call parts of the package and provide the infrast
 The package `mbrsim` is divided into several modules:
 - `graph.py`: Build a graph representation of a given lattice
 - `hamiltonian.py`: Simulation tools for the TFIM with different techniques (exact diagonalization, PEPS, MPS)
+- `mbr.py`: Simulation tools for the TFIM with multi-basis representation states
 - `utils.py`: Utility functions for data management and debugging
 
 ## The Manager
 
 The script `manager.py` is the main script that manages all simulations.
 The `manager.py` can start different simulations.
-Currently, there are three supported simulations: MPS, PEPS and exact diagonalization (ED).
+Currently, there are four supported simulations: MBR, MPS, PEPS and exact diagonalization (ED).
 
 An example call for a 2x2 lattice with open boundary conditions, solved with ED looks like
 ```
@@ -80,4 +78,5 @@ python manager.py --help
 
 ## Future directions and known issues
 
-- TBD
+- The magnetization observables have to be tested more in a system where the ground state is not degenerate, e.g. the ferromagnetic case with a small longitudinal field.
+- The staggered magnetization in the MBR case has some issue

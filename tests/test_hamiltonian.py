@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from .hamiltonian import PEPSSimulator, MPSSimulator, MPSSimulatorConfig, PEPSSimulatorConfig, EDSimulatorConfig, EDSimulatorQuimb
+from mbrsim.hamiltonian import PEPSSimulator, MPSSimulator, MPSSimulatorConfig, PEPSSimulatorConfig, EDSimulatorConfig, EDSimulatorQuimb
 from mbrsim.graph import LatticeGraph, Boundary
 
 
