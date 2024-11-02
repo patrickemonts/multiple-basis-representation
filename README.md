@@ -1,7 +1,8 @@
-Simulation of the Transverse Field Ising Model
-==============================================
+Multiple-Basis Representation States for the Transverse Field Ising Model
+=========================================================================
 
-This repository contains the code to simulate a two-dimensional transverse field Ising model with the Hamiltonian
+This repository contains the code to simulate a two-dimensional transverse field Ising model with multiple-basis representation states.
+The Hamiltonian of the model is given by
 
 $$
 H = J \sum_{\langle i,j \rangle} X_{i} X_{j} + h \sum_i Z_{i},
@@ -9,6 +10,8 @@ $$
 
 where $J$ is the Ising coupling and $h$ is the transverse field. 
 The matrices $X_i$ and $Z_i$ are the respective Pauli matrices acting on site $i$.
+
+Additionally, the repository contains benchmarking code in the form of matrix-product state (MPS), projected entangled pair state (PEPS) and exact diagonalization (ED) simulations.
 
 ## Installation
 The code is written for Python 3 and tested to work with Python 3.8.
