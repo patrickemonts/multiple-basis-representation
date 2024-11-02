@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from tfimsim.hamiltonian import PEPSSimulator, MPSSimulator, MPSSimulatorConfig, PEPSSimulatorConfig, EDSimulatorConfig, EDSimulatorQuimb
-from tfimsim.graph import LatticeGraph, Boundary
+from .hamiltonian import PEPSSimulator, MPSSimulator, MPSSimulatorConfig, PEPSSimulatorConfig, EDSimulatorConfig, EDSimulatorQuimb
+from mbrsim.graph import LatticeGraph, Boundary
 
 
 class TestEDQuimbSimulator(unittest.TestCase):

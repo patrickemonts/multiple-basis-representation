@@ -1,5 +1,5 @@
 import unittest
-from tfimsim.graph import LatticeGraph,Boundary
+from mbrsim.graph import LatticeGraph,Boundary
 
 class TestBoundary(unittest.TestCase):
 

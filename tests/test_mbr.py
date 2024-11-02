@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-import tfimsim.mbr as mbr
+import mbrsim.mbr as mbr
 
 class TestMBR(unittest.TestCase):
 

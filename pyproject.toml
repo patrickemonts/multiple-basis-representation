@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "tfimsim"  
+name = "mbrsim"  
 
-description = "A Python package to simulate the TFIM model"
+description = "A Python package to simulate ground state physics with multi-basis representation states"
 readme = "README.md"
 requires-python = ">=3.8"
 
@@ -14,13 +14,8 @@ dynamic = ["version"]
 
 license = {file = "LICENSE.txt"}
 
-
-
 keywords = ["physics", "quantum physics", "simulation"]
 
-# This should be your name or the name of the organization who originally
-# authored the project, and a valid email address corresponding to the name
-# listed.
 authors = [
   {name = "Patrick Emonts", email = "emonts@lorentz.leidenuniv.nl" },
   {name = "Adrian Perez Salinas", email = "perezsalinas@lorentz.leidenuniv.nl" }
@@ -32,23 +27,13 @@ maintainers = [
 ]
 
 classifiers = [
-  # How mature is this project? Common values are
-  #   3 - Alpha
-  #   4 - Beta
-  #   5 - Production/Stable
   "Development Status :: 3 - Alpha",
 
-  # Indicate who your project is intended for
   "Intended Audience :: Natural Science",
   "Topic :: Simulation :: Physics",
 
-  # Pick your license as you wish
-  #TODO: Fix this
   "License :: OSI Approved :: MIT License",
 
-  # Specify the Python versions you support here. In particular, ensure
-  # that you indicate you support Python 3. These classifiers are *not*
-  # checked by "pip install". See instead "requires-python" key in this file.
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -76,9 +61,9 @@ dev = ["check-manifest"]
 test = ["coverage"]
 
 [project.urls]
-"Homepage" = "https://github.com/patrickemonts/tfim"
-"Bug Reports" = "https://github.com/patrickemonts/tfim/issues"
-"Source" = "https://github.com/patrickemonts/tfim/"
+"Homepage" = "https://github.com/patrickemonts/multiple-basis-representation"
+"Bug Reports" = "https://github.com/patrickemonts/multiple-basis-representation/issues"
+"Source" = "https://github.com/patrickemonts/multiple-basis-representation/"
 
 [tool.setuptools_scm]
-write_to = "src/tfimsim/_version.py"
+write_to = "src/mbrsim/_version.py"

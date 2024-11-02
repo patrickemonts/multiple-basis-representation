@@ -38,6 +38,6 @@ inputfile_*
 run
 build
 data
-src/tfimsim.egg-info/*
-src/tfimsim/_version.py
+src/mbrsim.egg-info/*
+src/mbrsim/_version.py
 dist

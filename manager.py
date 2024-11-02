@@ -5,13 +5,11 @@ import os
 from tqdm import tqdm
 import pandas as pd
 
-from tfimsim.hamiltonian import EDSimulatorConfig,EDSimulatorQuimb,PEPSSimulator,PEPSSimulatorConfig, MPSSimulatorConfig, MPSSimulator
-from tfimsim.graph import Boundary,LatticeGraph
-from tfimsim.utils import SimulationType
-import tfimsim.mbr as mbr
+from mbrsim.hamiltonian import EDSimulatorConfig,EDSimulatorQuimb,PEPSSimulator,PEPSSimulatorConfig, MPSSimulatorConfig, MPSSimulator
+from mbrsim.graph import Boundary,LatticeGraph
+from mbrsim.utils import SimulationType
+import mbrsim.mbr as mbr
 from scipy.linalg import eigvalsh, eigh
-
-from time import time
 
 def args2suffix(args):
     """Convert type to a suffix for the output file and the log"""
