@@ -44,7 +44,7 @@ def _evaluate_energies_crossed(bitstrings_x, bitstrings_z, edges):
         add[q] = 1
         bitstrings_x = (bitstrings_x + np.vstack([add]*len(bitstrings_x))) % 2
         energies_xz -= compute_overlap_matrix(bitstrings_x, bitstrings_z, edges)
-        bitstrings_x = (bitstrings_x + np.vstack([add]*len(bitstrings_x))) % 2
+        bitstrings_x = (bitstrings_x+ np.vstack([add]*len(bitstrings_x))) % 2
 
     return energies_xz
 
@@ -53,12 +53,12 @@ def _evaluate_energies_crossed(bitstrings_x, bitstrings_z, edges):
 def evaluate_all_energies_z(bitstrings_x, bitstrings_z, edges):
     # Function to evaluate all energies given by the $XX$ hamiltonian, specified by bitstring in the computational and hadamard bases
     # Extension of evaluate_energies_xx
-    energies_xx = _evaluate_energies_z(bitstrings_x, bitstrings_z, edges)
+    energies_zz = _evaluate_energies_z(bitstrings_x, bitstrings_z, edges)
     energies_xz = _evaluate_energies_crossed(bitstrings_x, bitstrings_z, edges)
-    energies_zz = _evaluate_energies_cluster(bitstrings_x, bitstrings_z, edges)
+    energies_xx = _evaluate_energies_cluster(bitstrings_z, bitstrings_x, edges) # Check out! The order of arguments is swapped!
 
-    energies = np.block([[energies_xx, energies_xz], [
-                        np.conj(energies_xz.T), energies_zz]])
+    energies = np.block([[energies_zz, np.conj(energies_xz.T)], [
+                        energies_xz, energies_xx]])
 
     return energies
 
@@ -66,35 +66,34 @@ def evaluate_all_energies_cluster(bitstrings_x, bitstrings_z, edges):
     # Function to evaluate all energies given by the $XX$ hamiltonian, specified by bitstring in the computational and hadamard bases
     # Extension of evaluate_energies_xx
     energies_xx = _evaluate_energies_z(bitstrings_z, bitstrings_x, edges)
-    energies_xz = _evaluate_energies_crossed(bitstrings_z, bitstrings_x, edges)
-    energies_zz = _evaluate_energies_cluster(bitstrings_z, bitstrings_x, edges)
+    energies_zx = _evaluate_energies_crossed(bitstrings_z, bitstrings_x, edges)
+    energies_zz = _evaluate_energies_cluster(bitstrings_x, bitstrings_z, edges) # Check out! The order of arguments is swapped!
     
-    energies = np.block([[energies_xx, energies_xz], [
-                        np.conj(energies_xz.T), energies_zz]])
+    energies = np.block([[energies_zz, energies_zx], [
+                        energies_zx.T, energies_xx]])
 
     return energies
 
 # Computation of the overlap matrix, for sets of bitstrings in the computational and cluster bases
-def compute_overlap_matrix(bitstrings_x, bitstrings_z, edges):
+def compute_overlap_matrix(bitstrings_x, bitstrings_z, edges): # Seems this one is correct
 
     signs = np.ones(len(bitstrings_z), dtype=int)
 
     for i, b in enumerate(bitstrings_z):
         signs[i] = _sign_cluster(b, edges)
 
-    exponents = (bitstrings_x @ bitstrings_z.T) % 2
+    exponents = ((bitstrings_x @ bitstrings_z.T) + np.vstack([signs]*len(bitstrings_x))) % 2
 
-
-    f = (-1)**exponents / (2**(.5 * len(bitstrings_x[0]))) @ np.diag(signs)
+    f = (-1)**exponents / (2**(.5 * len(bitstrings_x[0])))
     return f
 
 
 def _sign_cluster(bitstring, edges):
-    sign = 1
+    sign = 0
     for e in edges:
-        sign *= (-1)**(bitstring[e[0]] * bitstring[e[1]])
+        sign += (bitstring[e[0]] * bitstring[e[1]])
 
-    return sign
+    return sign % 2
 
 
 def _sign_ham(bitstring, sites):
@@ -132,7 +131,7 @@ def generate_bitstrings(n, k, mode='0'):
 
 # List of all bitstrings in the computational bases that we consider
 
-def create_z_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
+def create_list(nx, ny, degree, ferro=True):  # List of all bitstrings in the X bases that we consider
   
     nqubits = nx * ny
     bitstrings = []
